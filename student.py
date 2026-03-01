@@ -15,6 +15,7 @@ Tip: Barycentric interpolation is the intended approach for stability.
 from __future__ import annotations
 
 import math
+import mpmath
 from typing import Callable
 
 import numpy as np
@@ -43,7 +44,18 @@ def composite_simpson(f: Callable[[float], float], a: float, b: float, n_panels:
     float
         Approximation to \int_a^b f(x) dx.
     """
-    raise NotImplementedError
+    n_subintervals = 2 * n_panels                   # Number of subintervals
+    x = np.linspace(a, b, n_subintervals + 1)       # Endpoints of subintervals
+    h = (b - a) / (n_subintervals)                  # Length of subintervals
+
+    integral = 0.
+    for panel in range(n_panels):
+        i = 2 * panel
+        integral += (h / 3) * (f(x[i]) + 4*f(x[i+1]) + f(x[i+2]))
+    return integral 
+    
+
+
 
 
 def gauss_legendre(f: Callable[[float], float], a: float, b: float, n_nodes: int) -> float:
