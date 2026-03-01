@@ -54,7 +54,7 @@ def composite_simpson(f: Callable[[float], float], a: float, b: float, n_panels:
         integral += (h / 3) * (f(x[i]) + 4*f(x[i+1]) + f(x[i+2]))
     return integral 
     
-    
+
 def gauss_legendre_pts_weights(a: float, b: float, n_nodes: int) -> tuple[np.ndarray, np.ndarray]:
     """Computes the points x_i and weights w_i for Gaussian quadrature
     on an arbitrary interval [a, b].
@@ -115,7 +115,21 @@ def romberg(f: Callable[[float], float], a: float, b: float, n: int) -> float:
     float
         R[n,n]
     """
-    raise NotImplementedError
+    num_pts = 2 ** np.arange(0, n+2)            # [2^{0}, 2^{1}, ..., 2^{n+1}]
+    h = (b - a) / num_pts                       # [h_0, h_1, ..., h_{n}]
+    
+    R = np.zeros((n+1, n+1), dtype=np.float128)
+    R[0, 0] = h[1] * (f(a) + f(b))
+    for k in range(1, n+1):
+        # Compute trapezoidal rule for 2^k subintervals
+        R[k, 0] = (R[k-1, 0] / 2)+ h[k] * np.sum([f(a + (2 * j - 1) * h[k]) for j in range(1, num_pts[k-1] + 1)])
+        
+        for j in range(1, k+1):
+            # Apply Richardson Extrapolation
+            R[k, j] = R[k, j-1] + (R[k, j-1] - R[k-1, j-1]) / ((num_pts[j])**2 - 1)
+    
+    # Return final result
+    return R[n, n]
 
 
 # ============================================================
