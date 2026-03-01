@@ -55,7 +55,7 @@ def composite_simpson(f: Callable[[float], float], a: float, b: float, n_panels:
     return integral 
     
 
-def gauss_legendre_pts_weights(a: float, b: float, n_nodes: int) -> tuple[np.ndarray, np.ndarray]:
+def gauss_legendre_pts_weights(a: float, b: float, n_nodes: int):
     """Computes the points x_i and weights w_i for Gaussian quadrature
     on an arbitrary interval [a, b].
     """
