@@ -99,37 +99,37 @@ def gauss_legendre(f: Callable[[float], float], a: float, b: float, n_nodes: int
     
 
 
-def romberg(f: Callable[[float], float], a: float, b: float, n: int) -> float:
-    """Romberg integration on [a,b] up to depth n.
+# def romberg(f: Callable[[float], float], a: float, b: float, n: int) -> float:
+#     """Romberg integration on [a,b] up to depth n.
 
-    Return the extrapolated value R[n,n].
-    Uses Richardson extrapolation applied to trapezoid refinements.
+#     Return the extrapolated value R[n,n].
+#     Uses Richardson extrapolation applied to trapezoid refinements.
 
-    Parameters
-    ----------
-    n : int
-        Depth (n>=0). Depth 0 returns the single trapezoid rule.
+#     Parameters
+#     ----------
+#     n : int
+#         Depth (n>=0). Depth 0 returns the single trapezoid rule.
 
-    Returns
-    -------
-    float
-        R[n,n]
-    """
-    num_pts = 2 ** np.arange(0, n+2)            # [2^{0}, 2^{1}, ..., 2^{n+1}]
-    h = (b - a) / num_pts                       # [h_0, h_1, ..., h_{n}]
+#     Returns
+#     -------
+#     float
+#         R[n,n]
+#     """
+#     num_pts = 2 ** np.arange(0, n+2)            # [2^{0}, 2^{1}, ..., 2^{n+1}]
+#     h = (b - a) / num_pts                       # [h_0, h_1, ..., h_{n}]
     
-    R = np.zeros((n+1, n+1), dtype=np.float128)
-    R[0, 0] = h[1] * (f(a) + f(b))
-    for k in range(1, n+1):
-        # Compute trapezoidal rule for 2^k subintervals
-        R[k, 0] = (R[k-1, 0] / 2)+ h[k] * np.sum([f(a + (2 * j - 1) * h[k]) for j in range(1, num_pts[k-1] + 1)])
+#     R = np.zeros((n+1, n+1), dtype=np.float128)
+#     R[0, 0] = h[1] * (f(a) + f(b))
+#     for k in range(1, n+1):
+#         # Compute trapezoidal rule for 2^k subintervals
+#         R[k, 0] = (R[k-1, 0] / 2)+ h[k] * np.sum([f(a + (2 * j - 1) * h[k]) for j in range(1, num_pts[k-1] + 1)])
         
-        for j in range(1, k+1):
-            # Apply Richardson Extrapolation
-            R[k, j] = R[k, j-1] + (R[k, j-1] - R[k-1, j-1]) / ((num_pts[j])**2 - 1)
+#         for j in range(1, k+1):
+#             # Apply Richardson Extrapolation
+#             R[k, j] = R[k, j-1] + (R[k, j-1] - R[k-1, j-1]) / ((num_pts[j])**2 - 1)
     
-    # Return final result
-    return R[n, n]
+#     # Return final result
+#     return R[n, n]
 
 
 # # ============================================================
