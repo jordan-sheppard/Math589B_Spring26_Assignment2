@@ -26,7 +26,7 @@ import numpy as np
 # ============================================================
 
 def composite_simpson(f: Callable[[float], float], a: float, b: float, n_panels: int) -> float:
-    """Composite Simpson's rule on [a,b] using n_panels panels.
+    r"""Composite Simpson's rule on [a,b] using n_panels panels.
 
     Each panel uses 2 subintervals, so total subintervals = 2*n_panels.
 
@@ -78,7 +78,7 @@ def gauss_legendre_pts_weights(a: float, b: float, n_nodes: int) -> tuple[np.nda
 
 
 def gauss_legendre(f: Callable[[float], float], a: float, b: float, n_nodes: int) -> float:
-    """Gauss-Legendre quadrature on [a,b] with n_nodes.
+    r"""Gauss-Legendre quadrature on [a,b] with n_nodes.
 
     You may use numpy's Legendre utilities.
 
@@ -172,16 +172,23 @@ def _barycentric_eval(x_nodes: np.ndarray, y_nodes: np.ndarray, x_eval: np.ndarr
 
 def equispaced_interpolant_values(f: Callable[[float], float], n: int, x_eval: np.ndarray) -> np.ndarray:
     """Evaluate the degree-n interpolant Q_n of f at equispaced nodes on [-1,1]."""
-    raise NotImplementedError
+    x_nodes = np.linspace(-1, 1, n+1)     # n+1 equispaced nodes on [-1, 1]
+    y_nodes = np.array([f(node) for node in x_nodes])
+    return _barycentric_eval(x_nodes, y_nodes, x_eval)
+
 
 
 def chebyshev_lobatto_interpolant_values(f: Callable[[float], float], n: int, x_eval: np.ndarray) -> np.ndarray:
     """Evaluate the degree-n interpolant p_n of f at Chebyshev-Lobatto nodes on [-1,1]."""
-    raise NotImplementedError
+    k = np.arange(0, n+1)                       # k = [0, 1, ..., n]
+    theta_nodes = (k + 0.5) * np.pi / n         # (k + 1/2) pi / n
+    x_nodes = np.cos(theta_nodes)               # Project onto x-axis from unit circle
+    y_nodes = np.array([f(node) for node in x_nodes])
+    return _barycentric_eval(x_nodes, y_nodes, x_eval)
 
 
 def poly_integral_from_values(x_nodes: np.ndarray, y_nodes: np.ndarray) -> float:
-    """Compute integral over [-1,1] of the interpolating polynomial through (x_nodes, y_nodes).
+    r"""Compute integral over [-1,1] of the interpolating polynomial through (x_nodes, y_nodes).
 
     You may recover polynomial coefficients (e.g. solve Vandermonde) for moderate n,
     and integrate term-by-term. Alternatively, construct and integrate in another stable way.
@@ -191,4 +198,10 @@ def poly_integral_from_values(x_nodes: np.ndarray, y_nodes: np.ndarray) -> float
     float
         \int_{-1}^1 P(x) dx, where P interpolates the given data.
     """
-    raise NotImplementedError
+    degree = len(x_nodes) - 1                       # Degree of interpolating polynomial
+    num_gaussian_pts = ((degree + 1) // 2) + 1      # Number of Gaussian points needed for exact solution 
+    
+    # Use Barycentric Lagrange evaluation and Gaussian Quadrature to implement the integral
+    f = lambda x: _barycentric_eval(x_nodes, y_nodes, np.array([x]))[0]
+    return gauss_legendre(f, -1, 1, num_gaussian_pts)
+
