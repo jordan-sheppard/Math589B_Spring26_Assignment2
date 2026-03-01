@@ -54,8 +54,27 @@ def composite_simpson(f: Callable[[float], float], a: float, b: float, n_panels:
         integral += (h / 3) * (f(x[i]) + 4*f(x[i+1]) + f(x[i+2]))
     return integral 
     
+    
+def gauss_legendre_pts_weights(a: float, b: float, n_nodes: int) -> tuple[np.ndarray, np.ndarray]:
+    """Computes the points x_i and weights w_i for Gaussian quadrature
+    on an arbitrary interval [a, b].
+    """
+    ## STEP 1: Compute points/weights on [-1, 1]
+    Pn_coeffs = [0] * (n_nodes) + [1]                               # P_n(x) = 0 * P_0(x) + 0 * P_1(x) + ... + 0 * P_{n-1}(x) + 1 * P_n(x)
+    Pn_der_coeffs = np.polynomial.legendre.legder(Pn_coeffs, m=1)   # Coefficients of P_n'(x) in terms of other P_k(x)
+    
+    # Compute Quadrature Nodes -> Roots of P_n(x)
+    xi = np.polynomial.legendre.legroots(Pn_coeffs)
+    
+    # Compute quadrature weights
+    Pn_prime_xi = np.polynomial.legendre.legval(xi, Pn_der_coeffs)
+    wi = 2 / ((1 - xi**2) * Pn_prime_xi**2)
 
+    ## STEP 2: Transform points and weights to interval [a, b] (weights are same)
+    wi_transformed = wi * ((b - a) / 2)
+    xi_transformed = ((b - a) / 2) * xi + ((b + a) / 2)
 
+    return xi_transformed, wi_transformed
 
 
 def gauss_legendre(f: Callable[[float], float], a: float, b: float, n_nodes: int) -> float:
@@ -68,7 +87,16 @@ def gauss_legendre(f: Callable[[float], float], a: float, b: float, n_nodes: int
     float
         Approximation to \int_a^b f(x) dx.
     """
-    raise NotImplementedError
+    # Compute quadrature points/weights, and function values
+    # at the quadrature points
+    pts, weights = gauss_legendre_pts_weights(a, b, n_nodes)
+    f_vals = np.array([f(pt) for pt in pts])
+
+    # Return approximation as weighted sum of function values
+    # at the quadrature points
+    return weights @ f_vals
+
+    
 
 
 def romberg(f: Callable[[float], float], a: float, b: float, n: int) -> float:
