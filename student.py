@@ -26,7 +26,7 @@ import numpy as np
 # ============================================================
 
 def composite_simpson(f: Callable[[float], float], a: float, b: float, n_panels: int) -> float:
-    r"""Composite Simpson's rule on [a,b] using n_panels panels.
+    """Composite Simpson's rule on [a,b] using n_panels panels.
 
     Each panel uses 2 subintervals, so total subintervals = 2*n_panels.
 
@@ -78,7 +78,7 @@ def gauss_legendre_pts_weights(a: float, b: float, n_nodes: int) -> tuple[np.nda
 
 
 def gauss_legendre(f: Callable[[float], float], a: float, b: float, n_nodes: int) -> float:
-    r"""Gauss-Legendre quadrature on [a,b] with n_nodes.
+    """Gauss-Legendre quadrature on [a,b] with n_nodes.
 
     You may use numpy's Legendre utilities.
 
@@ -188,7 +188,7 @@ def chebyshev_lobatto_interpolant_values(f: Callable[[float], float], n: int, x_
 
 
 def poly_integral_from_values(x_nodes: np.ndarray, y_nodes: np.ndarray) -> float:
-    r"""Compute integral over [-1,1] of the interpolating polynomial through (x_nodes, y_nodes).
+    """Compute integral over [-1,1] of the interpolating polynomial through (x_nodes, y_nodes).
 
     You may recover polynomial coefficients (e.g. solve Vandermonde) for moderate n,
     and integrate term-by-term. Alternatively, construct and integrate in another stable way.
