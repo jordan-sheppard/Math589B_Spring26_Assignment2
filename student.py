@@ -12,196 +12,196 @@ Rules:
 Tip: Barycentric interpolation is the intended approach for stability.
 """
 
-from __future__ import annotations
+# from __future__ import annotations
 
-import math
-import mpmath
-from typing import Callable
+# import math
+# import mpmath
+# from typing import Callable
 
-import numpy as np
+# import numpy as np
 
 
-# ============================================================
-# Quadrature
-# ============================================================
+# # ============================================================
+# # Quadrature
+# # ============================================================
 
-def composite_simpson(f: Callable[[float], float], a: float, b: float, n_panels: int) -> float:
-    """Composite Simpson's rule on [a,b] using n_panels panels.
+# def composite_simpson(f: Callable[[float], float], a: float, b: float, n_panels: int) -> float:
+#     """Composite Simpson's rule on [a,b] using n_panels panels.
 
-    Each panel uses 2 subintervals, so total subintervals = 2*n_panels.
+#     Each panel uses 2 subintervals, so total subintervals = 2*n_panels.
 
-    Parameters
-    ----------
-    f : callable
-        Function f(x) to integrate (scalar -> scalar).
-    a, b : float
-        Integration interval endpoints.
-    n_panels : int
-        Number of Simpson panels (must be positive).
+#     Parameters
+#     ----------
+#     f : callable
+#         Function f(x) to integrate (scalar -> scalar).
+#     a, b : float
+#         Integration interval endpoints.
+#     n_panels : int
+#         Number of Simpson panels (must be positive).
 
-    Returns
-    -------
-    float
-        Approximation to \int_a^b f(x) dx.
-    """
-    n_subintervals = 2 * n_panels                   # Number of subintervals
-    x = np.linspace(a, b, n_subintervals + 1)       # Endpoints of subintervals
-    h = (b - a) / (n_subintervals)                  # Length of subintervals
+#     Returns
+#     -------
+#     float
+#         Approximation to \int_a^b f(x) dx.
+#     """
+#     n_subintervals = 2 * n_panels                   # Number of subintervals
+#     x = np.linspace(a, b, n_subintervals + 1)       # Endpoints of subintervals
+#     h = (b - a) / (n_subintervals)                  # Length of subintervals
 
-    integral = 0.
-    for panel in range(n_panels):
-        i = 2 * panel
-        integral += (h / 3) * (f(x[i]) + 4*f(x[i+1]) + f(x[i+2]))
-    return integral 
+#     integral = 0.
+#     for panel in range(n_panels):
+#         i = 2 * panel
+#         integral += (h / 3) * (f(x[i]) + 4*f(x[i+1]) + f(x[i+2]))
+#     return integral 
     
 
-def gauss_legendre_pts_weights(a: float, b: float, n_nodes: int):
-    """Computes the points x_i and weights w_i for Gaussian quadrature
-    on an arbitrary interval [a, b].
-    """
-    ## STEP 1: Compute points/weights on [-1, 1]
-    Pn_coeffs = [0] * (n_nodes) + [1]                               # P_n(x) = 0 * P_0(x) + 0 * P_1(x) + ... + 0 * P_{n-1}(x) + 1 * P_n(x)
-    Pn_der_coeffs = np.polynomial.legendre.legder(Pn_coeffs, m=1)   # Coefficients of P_n'(x) in terms of other P_k(x)
+# def gauss_legendre_pts_weights(a: float, b: float, n_nodes: int):
+#     """Computes the points x_i and weights w_i for Gaussian quadrature
+#     on an arbitrary interval [a, b].
+#     """
+#     ## STEP 1: Compute points/weights on [-1, 1]
+#     Pn_coeffs = [0] * (n_nodes) + [1]                               # P_n(x) = 0 * P_0(x) + 0 * P_1(x) + ... + 0 * P_{n-1}(x) + 1 * P_n(x)
+#     Pn_der_coeffs = np.polynomial.legendre.legder(Pn_coeffs, m=1)   # Coefficients of P_n'(x) in terms of other P_k(x)
     
-    # Compute Quadrature Nodes -> Roots of P_n(x)
-    xi = np.polynomial.legendre.legroots(Pn_coeffs)
+#     # Compute Quadrature Nodes -> Roots of P_n(x)
+#     xi = np.polynomial.legendre.legroots(Pn_coeffs)
     
-    # Compute quadrature weights
-    Pn_prime_xi = np.polynomial.legendre.legval(xi, Pn_der_coeffs)
-    wi = 2 / ((1 - xi**2) * Pn_prime_xi**2)
+#     # Compute quadrature weights
+#     Pn_prime_xi = np.polynomial.legendre.legval(xi, Pn_der_coeffs)
+#     wi = 2 / ((1 - xi**2) * Pn_prime_xi**2)
 
-    ## STEP 2: Transform points and weights to interval [a, b] (weights are same)
-    wi_transformed = wi * ((b - a) / 2)
-    xi_transformed = ((b - a) / 2) * xi + ((b + a) / 2)
+#     ## STEP 2: Transform points and weights to interval [a, b] (weights are same)
+#     wi_transformed = wi * ((b - a) / 2)
+#     xi_transformed = ((b - a) / 2) * xi + ((b + a) / 2)
 
-    return xi_transformed, wi_transformed
+#     return xi_transformed, wi_transformed
 
 
-def gauss_legendre(f: Callable[[float], float], a: float, b: float, n_nodes: int) -> float:
-    """Gauss-Legendre quadrature on [a,b] with n_nodes.
+# def gauss_legendre(f: Callable[[float], float], a: float, b: float, n_nodes: int) -> float:
+#     """Gauss-Legendre quadrature on [a,b] with n_nodes.
 
-    You may use numpy's Legendre utilities.
+#     You may use numpy's Legendre utilities.
 
-    Returns
-    -------
-    float
-        Approximation to \int_a^b f(x) dx.
-    """
-    # Compute quadrature points/weights, and function values
-    # at the quadrature points
-    pts, weights = gauss_legendre_pts_weights(a, b, n_nodes)
-    f_vals = np.array([f(pt) for pt in pts])
+#     Returns
+#     -------
+#     float
+#         Approximation to \int_a^b f(x) dx.
+#     """
+#     # Compute quadrature points/weights, and function values
+#     # at the quadrature points
+#     pts, weights = gauss_legendre_pts_weights(a, b, n_nodes)
+#     f_vals = np.array([f(pt) for pt in pts])
 
-    # Return approximation as weighted sum of function values
-    # at the quadrature points
-    return weights @ f_vals
+#     # Return approximation as weighted sum of function values
+#     # at the quadrature points
+#     return weights @ f_vals
 
     
 
 
-def romberg(f: Callable[[float], float], a: float, b: float, n: int) -> float:
-    """Romberg integration on [a,b] up to depth n.
+# def romberg(f: Callable[[float], float], a: float, b: float, n: int) -> float:
+#     """Romberg integration on [a,b] up to depth n.
 
-    Return the extrapolated value R[n,n].
-    Uses Richardson extrapolation applied to trapezoid refinements.
+#     Return the extrapolated value R[n,n].
+#     Uses Richardson extrapolation applied to trapezoid refinements.
 
-    Parameters
-    ----------
-    n : int
-        Depth (n>=0). Depth 0 returns the single trapezoid rule.
+#     Parameters
+#     ----------
+#     n : int
+#         Depth (n>=0). Depth 0 returns the single trapezoid rule.
 
-    Returns
-    -------
-    float
-        R[n,n]
-    """
-    num_pts = 2 ** np.arange(0, n+2)            # [2^{0}, 2^{1}, ..., 2^{n+1}]
-    h = (b - a) / num_pts                       # [h_0, h_1, ..., h_{n}]
+#     Returns
+#     -------
+#     float
+#         R[n,n]
+#     """
+#     num_pts = 2 ** np.arange(0, n+2)            # [2^{0}, 2^{1}, ..., 2^{n+1}]
+#     h = (b - a) / num_pts                       # [h_0, h_1, ..., h_{n}]
     
-    R = np.zeros((n+1, n+1), dtype=np.float128)
-    R[0, 0] = h[1] * (f(a) + f(b))
-    for k in range(1, n+1):
-        # Compute trapezoidal rule for 2^k subintervals
-        R[k, 0] = (R[k-1, 0] / 2)+ h[k] * np.sum([f(a + (2 * j - 1) * h[k]) for j in range(1, num_pts[k-1] + 1)])
+#     R = np.zeros((n+1, n+1), dtype=np.float128)
+#     R[0, 0] = h[1] * (f(a) + f(b))
+#     for k in range(1, n+1):
+#         # Compute trapezoidal rule for 2^k subintervals
+#         R[k, 0] = (R[k-1, 0] / 2)+ h[k] * np.sum([f(a + (2 * j - 1) * h[k]) for j in range(1, num_pts[k-1] + 1)])
         
-        for j in range(1, k+1):
-            # Apply Richardson Extrapolation
-            R[k, j] = R[k, j-1] + (R[k, j-1] - R[k-1, j-1]) / ((num_pts[j])**2 - 1)
+#         for j in range(1, k+1):
+#             # Apply Richardson Extrapolation
+#             R[k, j] = R[k, j-1] + (R[k, j-1] - R[k-1, j-1]) / ((num_pts[j])**2 - 1)
     
-    # Return final result
-    return R[n, n]
+#     # Return final result
+#     return R[n, n]
 
 
-# ============================================================
-# Interpolation (Runge vs Chebyshev)
-# ============================================================
+# # ============================================================
+# # Interpolation (Runge vs Chebyshev)
+# # ============================================================
 
-def _barycentric_weights(x_nodes: np.ndarray) -> np.ndarray:
-    """Compute barycentric weights for distinct nodes.
+# def _barycentric_weights(x_nodes: np.ndarray) -> np.ndarray:
+#     """Compute barycentric weights for distinct nodes.
 
-    This is O(n^2) which is fine for n up to ~50 in this assignment.
-    """
-    x_nodes = np.asarray(x_nodes, dtype=float)
-    n = x_nodes.size
-    w = np.ones(n, dtype=float)
-    for j in range(n):
-        diff = x_nodes[j] - np.delete(x_nodes, j)
-        w[j] = 1.0 / np.prod(diff)
-    return w
-
-
-def _barycentric_eval(x_nodes: np.ndarray, y_nodes: np.ndarray, x_eval: np.ndarray) -> np.ndarray:
-    """Evaluate barycentric interpolant at x_eval."""
-    x_nodes = np.asarray(x_nodes, dtype=float)
-    y_nodes = np.asarray(y_nodes, dtype=float)
-    x_eval = np.asarray(x_eval, dtype=float)
-
-    w = _barycentric_weights(x_nodes)
-    out = np.empty_like(x_eval, dtype=float)
-
-    for i, x in enumerate(x_eval):
-        diff = x - x_nodes
-        hit = np.where(np.abs(diff) < 1e-14)[0]
-        if hit.size:
-            out[i] = y_nodes[hit[0]]
-        else:
-            tmp = w / diff
-            out[i] = np.sum(tmp * y_nodes) / np.sum(tmp)
-    return out
+#     This is O(n^2) which is fine for n up to ~50 in this assignment.
+#     """
+#     x_nodes = np.asarray(x_nodes, dtype=float)
+#     n = x_nodes.size
+#     w = np.ones(n, dtype=float)
+#     for j in range(n):
+#         diff = x_nodes[j] - np.delete(x_nodes, j)
+#         w[j] = 1.0 / np.prod(diff)
+#     return w
 
 
-def equispaced_interpolant_values(f: Callable[[float], float], n: int, x_eval: np.ndarray) -> np.ndarray:
-    """Evaluate the degree-n interpolant Q_n of f at equispaced nodes on [-1,1]."""
-    x_nodes = np.linspace(-1, 1, n+1)     # n+1 equispaced nodes on [-1, 1]
-    y_nodes = np.array([f(node) for node in x_nodes])
-    return _barycentric_eval(x_nodes, y_nodes, x_eval)
+# def _barycentric_eval(x_nodes: np.ndarray, y_nodes: np.ndarray, x_eval: np.ndarray) -> np.ndarray:
+#     """Evaluate barycentric interpolant at x_eval."""
+#     x_nodes = np.asarray(x_nodes, dtype=float)
+#     y_nodes = np.asarray(y_nodes, dtype=float)
+#     x_eval = np.asarray(x_eval, dtype=float)
+
+#     w = _barycentric_weights(x_nodes)
+#     out = np.empty_like(x_eval, dtype=float)
+
+#     for i, x in enumerate(x_eval):
+#         diff = x - x_nodes
+#         hit = np.where(np.abs(diff) < 1e-14)[0]
+#         if hit.size:
+#             out[i] = y_nodes[hit[0]]
+#         else:
+#             tmp = w / diff
+#             out[i] = np.sum(tmp * y_nodes) / np.sum(tmp)
+#     return out
+
+
+# def equispaced_interpolant_values(f: Callable[[float], float], n: int, x_eval: np.ndarray) -> np.ndarray:
+#     """Evaluate the degree-n interpolant Q_n of f at equispaced nodes on [-1,1]."""
+#     x_nodes = np.linspace(-1, 1, n+1)     # n+1 equispaced nodes on [-1, 1]
+#     y_nodes = np.array([f(node) for node in x_nodes])
+#     return _barycentric_eval(x_nodes, y_nodes, x_eval)
 
 
 
-def chebyshev_lobatto_interpolant_values(f: Callable[[float], float], n: int, x_eval: np.ndarray) -> np.ndarray:
-    """Evaluate the degree-n interpolant p_n of f at Chebyshev-Lobatto nodes on [-1,1]."""
-    k = np.arange(0, n+1)                       # k = [0, 1, ..., n]
-    theta_nodes = (k + 0.5) * np.pi / n         # (k + 1/2) pi / n
-    x_nodes = np.cos(theta_nodes)               # Project onto x-axis from unit circle
-    y_nodes = np.array([f(node) for node in x_nodes])
-    return _barycentric_eval(x_nodes, y_nodes, x_eval)
+# def chebyshev_lobatto_interpolant_values(f: Callable[[float], float], n: int, x_eval: np.ndarray) -> np.ndarray:
+#     """Evaluate the degree-n interpolant p_n of f at Chebyshev-Lobatto nodes on [-1,1]."""
+#     k = np.arange(0, n+1)                       # k = [0, 1, ..., n]
+#     theta_nodes = (k + 0.5) * np.pi / n         # (k + 1/2) pi / n
+#     x_nodes = np.cos(theta_nodes)               # Project onto x-axis from unit circle
+#     y_nodes = np.array([f(node) for node in x_nodes])
+#     return _barycentric_eval(x_nodes, y_nodes, x_eval)
 
 
-def poly_integral_from_values(x_nodes: np.ndarray, y_nodes: np.ndarray) -> float:
-    """Compute integral over [-1,1] of the interpolating polynomial through (x_nodes, y_nodes).
+# def poly_integral_from_values(x_nodes: np.ndarray, y_nodes: np.ndarray) -> float:
+#     """Compute integral over [-1,1] of the interpolating polynomial through (x_nodes, y_nodes).
 
-    You may recover polynomial coefficients (e.g. solve Vandermonde) for moderate n,
-    and integrate term-by-term. Alternatively, construct and integrate in another stable way.
+#     You may recover polynomial coefficients (e.g. solve Vandermonde) for moderate n,
+#     and integrate term-by-term. Alternatively, construct and integrate in another stable way.
 
-    Returns
-    -------
-    float
-        \int_{-1}^1 P(x) dx, where P interpolates the given data.
-    """
-    degree = len(x_nodes) - 1                       # Degree of interpolating polynomial
-    num_gaussian_pts = ((degree + 1) // 2) + 1      # Number of Gaussian points needed for exact solution 
+#     Returns
+#     -------
+#     float
+#         \int_{-1}^1 P(x) dx, where P interpolates the given data.
+#     """
+#     degree = len(x_nodes) - 1                       # Degree of interpolating polynomial
+#     num_gaussian_pts = ((degree + 1) // 2) + 1      # Number of Gaussian points needed for exact solution 
     
-    # Use Barycentric Lagrange evaluation and Gaussian Quadrature to implement the integral
-    f = lambda x: _barycentric_eval(x_nodes, y_nodes, np.array([x]))[0]
-    return gauss_legendre(f, -1, 1, num_gaussian_pts)
+#     # Use Barycentric Lagrange evaluation and Gaussian Quadrature to implement the integral
+#     f = lambda x: _barycentric_eval(x_nodes, y_nodes, np.array([x]))[0]
+#     return gauss_legendre(f, -1, 1, num_gaussian_pts)
 
